@@ -132,6 +132,8 @@ def tensors_as_images(
         # Scale to range 0..1
         min, max = np.min(image), np.max(image)
         image = (image - min) / (max - min)
+        # image = image / 2 + 0.5
+
 
         ax.imshow(image, cmap=cmap)
 
@@ -205,7 +207,7 @@ def plot_fit(fit_res: FitResult, fig=None, log_loss=False, legend=None):
         attr = f"{traintest}_{lossacc}"
         data = getattr(fit_res, attr)
         h = ax.plot(np.arange(1, len(data) + 1), data, label=legend)
-        ax.set_title(attr)
+        ax.set_title(attr.replace('test','validation') if 'test' in attr else attr)
         if lossacc == "loss":
             ax.set_xlabel("Iteration #")
             ax.set_ylabel("Loss")

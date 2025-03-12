@@ -97,11 +97,11 @@ class Trainer(abc.ABC):
             # ====== YOUR CODE: ======
 
             train_result = self.train_epoch(dl_train, verbose= verbose, **kw)
-            train_loss.extend(train_result.losses)
+            train_loss.append(sum(train_result.losses) / len(train_result.losses))
             train_acc.append(train_result.accuracy)
 
             test_result = self.test_epoch(dl_test, verbose= verbose, **kw)
-            test_loss.extend(test_result.losses)
+            test_loss.append(sum(test_result.losses) / len(test_result.losses))
             test_acc.append(test_result.accuracy)
 
             actual_num_epochs += 1
@@ -282,24 +282,6 @@ class ClassifierTrainer(Trainer):
     Trainer for our Classifier-based models.
     """
 
-    def __init__(
-        self,
-        model,
-        loss_fn: nn.Module,
-        optimizer: Optimizer,
-        device: Optional[torch.device] = None,
-    ):
-        """
-        Initialize the trainer.
-        :param model: Instance of the classifier model to train.
-        :param loss_fn: The loss function to evaluate with.
-        :param optimizer: The optimizer to train with.
-        :param device: torch.device to run training on (CPU or GPU).
-        """
-        super().__init__(model, device)
-        self.optimizer = optimizer
-        self.loss_fn = loss_fn
-
     def train_batch(self, batch) -> BatchResult:
         X, y = batch
         if self.device:
@@ -330,7 +312,7 @@ class ClassifierTrainer(Trainer):
 
         #classify
         with torch.no_grad(): # no need to calculate gradients
-            num_correct = torch.sum(self.model.classify_scores(y_hat) == y).item()
+            num_correct = torch.sum(torch.argmax(y_hat, dim= 1) == y).item()
 
         batch_loss = loss.item()
         # ========================
@@ -355,57 +337,8 @@ class ClassifierTrainer(Trainer):
             y_hat = self.model(X)
             batch_loss = self.loss_fn(y_hat, y).item()
         
-            num_correct = torch.sum(self.model.classify_scores(y_hat) == y).item()
+            num_correct = torch.sum(torch.argmax(y_hat, dim= 1) == y).item()
             # ========================
 
         return BatchResult(batch_loss, num_correct)
 
-
-class LayerTrainer(Trainer):
-    def __init__(self, model, loss_fn, optimizer):
-        # ====== YOUR CODE: ======
-        super().__init__(model= model)
-        self.loss_fn = loss_fn
-        self.optimizer = optimizer
-        # ========================
-
-    def train_batch(self, batch) -> BatchResult:
-        X, y = batch
-
-        # TODO: Train the Layer model on one batch of data.
-        #  - Forward pass
-        #  - Backward pass
-        #  - Optimize params
-        #  - Calculate number of correct predictions (make sure it's an int,
-        #    not a tensor) as num_correct.
-        # ====== YOUR CODE: ======
-        # should use seq?
-
-        #forward
-        y_h = self.model.forward(X)
-        loss = self.loss_fn(y_h, y)
-        
-        #backward
-        self.optimizer.zero_grad()
-        self.model.backward(self.loss_fn.backward())
-
-        #step
-        self.optimizer.step()
-
-        num_correct = torch.sum(torch.argmax(y_h, dim= 1) == y).item()
-        # ========================
-
-        return BatchResult(loss, num_correct)
-
-    def test_batch(self, batch) -> BatchResult:
-        X, y = batch
-
-        # TODO: Evaluate the Layer model on one batch of data.
-        # ====== YOUR CODE: ======
-        y_h = self.model(X)
-        loss = self.loss_fn(y_h, y)
-
-        num_correct = torch.sum(torch.argmax(y_h, dim= 1) == y).item()
-        # ========================
-
-        return BatchResult(loss, num_correct)
