@@ -6,7 +6,7 @@ from utils import plot_tsne
 import random
 import argparse
 
-import mnist_nets
+import cifar_nets
 
 NUM_CLASSES = 10
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     #Model
     # encoder_model = torch.nn.Linear(32*32*3,args.latent_dim).to(args.device)
     # decoder_model = torch.nn.Linear(args.latent_dim,32*32*3 if args.self_supervised else NUM_CLASSES).to(args.device) 
-    model = mnist_nets.AE(img_shape, args.latent_dim).to(args.device)
+    model = cifar_nets.AE(img_shape, args.latent_dim).to(args.device)
 
     #Optimizer
     optimizer = torch.optim.Adam(model.parameters(),lr = 1e-1, weight_decay = 1e-8)
