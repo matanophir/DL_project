@@ -122,6 +122,8 @@ class Trainer(abc.ABC):
             if save_checkpoint and checkpoint_filename is not None:
                 saved_state = dict(
                     best_acc=best_acc,
+                    test_loss= test_loss[-1],
+                    fit_result = FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc),
                     ewi=epochs_without_improvement,
                     model_state=self.model.state_dict(),
                 )
