@@ -138,3 +138,17 @@ class Reg_Classifier(nn.Module):
         return self.classifier_head(encoded)
 
 
+
+class ContrastiveEncoder(nn.Module):
+    def __init__(self, in_channels, latent_dim):
+        super().__init__()
+
+        self.encoder = Encoder(in_channels, latent_dim)
+        self.projector = nn.Sequential(
+            nn.Linear(latent_dim, latent_dim),
+            nn.ReLU(),
+            nn.Linear(latent_dim, latent_dim),
+        )
+    
+    def forward(self, x):
+        return self.projector(self.encoder(x))

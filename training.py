@@ -344,3 +344,42 @@ class ClassifierTrainer(Trainer):
 
         return BatchResult(batch_loss, num_correct)
 
+class ContrastTrainer(Trainer):
+
+    def train_batch(self, batch) -> BatchResult:
+        (xi,xj), _ = batch
+        if self.device:
+            xi = xi.to(self.device)
+            xj = xj.to(self.device)
+        
+        x = torch.cat((xi,xj), dim=0) # Image batch (2N,C,H,W)
+
+        #forward
+        z = self.model(x)
+        loss = self.loss_fn(z)
+
+        #backward
+        self.optimizer.zero_grad()
+        loss.backward()
+
+        #step
+        self.optimizer.step()
+
+        return BatchResult(loss.item(), 1 / loss.item())
+
+    def test_batch(self, batch) -> BatchResult:
+        (xi,xj), _ = batch
+        if self.device:
+            xi = xi.to(self.device)
+            xj = xj.to(self.device)
+        
+        x = torch.cat((xi,xj), dim=0) # Image batch (2N,C,H,W)
+
+        with torch.no_grad():
+            #forward
+            z = self.model(x)
+
+            #loss
+            loss = self.loss_fn(z)
+
+        return BatchResult(loss.item(), 1 / loss.item())
