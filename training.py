@@ -121,8 +121,8 @@ class Trainer(abc.ABC):
             # Save model checkpoint if requested
             if save_checkpoint and checkpoint_filename is not None:
                 saved_state = dict(
-                    best_acc=best_acc,
-                    test_loss= test_loss[-1],
+                    best_epoch_test_acc=best_acc,
+                    best_epoch_train_acc=train_acc[-1],
                     fit_result = FitResult(actual_num_epochs, train_loss, train_acc, test_loss, test_acc),
                     ewi=epochs_without_improvement,
                     model_state=self.model.state_dict(),
@@ -241,8 +241,6 @@ class AETrainer(Trainer):
     def train_batch(self, batch) -> BatchResult:
         x, _ = batch
         x = x.to(self.device)  # Image batch (N,C,H,W)
-        # TODO: Train a VAE on one batch.
-        # ====== YOUR CODE: ======
         self.optimizer.zero_grad()
 
         #forward
@@ -257,8 +255,6 @@ class AETrainer(Trainer):
         #step
         self.optimizer.step()
 
-        # ========================
-
         return BatchResult(loss.item(), 1 / loss.item())
 
     def test_batch(self, batch) -> BatchResult:
@@ -266,8 +262,6 @@ class AETrainer(Trainer):
         x = x.to(self.device)  # Image batch (N,C,H,W)
 
         with torch.no_grad():
-            # TODO: Evaluate a AE on one batch.
-            # ====== YOUR CODE: ======
 
             #forward
             x_recon = self.model(x)
@@ -275,7 +269,6 @@ class AETrainer(Trainer):
             #loss
             loss = self.loss_fn(x, x_recon)
 
-            # ========================
 
         return BatchResult(loss.item(), 1 / loss.item())
 
@@ -294,13 +287,6 @@ class ClassifierTrainer(Trainer):
         batch_loss: float
         num_correct: int
 
-        # TODO: Train the model on one batch of data.
-        #  - Forward pass
-        #  - Backward pass
-        #  - Update parameters
-        #  - Classify and calculate number of correct predictions
-        # ====== YOUR CODE: ======
-        
         #forward 
         y_hat = self.model(X)
         loss = self.loss_fn(y_hat, y)
@@ -317,7 +303,6 @@ class ClassifierTrainer(Trainer):
             num_correct = torch.sum(torch.argmax(y_hat, dim= 1) == y).item()
 
         batch_loss = loss.item()
-        # ========================
 
         return BatchResult(batch_loss, num_correct)
 
@@ -332,15 +317,10 @@ class ClassifierTrainer(Trainer):
         num_correct: int
 
         with torch.no_grad():
-            # TODO: Evaluate the model on one batch of data.
-            #  - Forward pass
-            #  - Calculate number of correct predictions
-            # ====== YOUR CODE: ======
             y_hat = self.model(X)
             batch_loss = self.loss_fn(y_hat, y).item()
         
             num_correct = torch.sum(torch.argmax(y_hat, dim= 1) == y).item()
-            # ========================
 
         return BatchResult(batch_loss, num_correct)
 
