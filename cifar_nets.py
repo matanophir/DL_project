@@ -137,7 +137,29 @@ class Reg_Classifier(nn.Module):
         encoded = self.encoder(x)
         return self.classifier_head(encoded)
 
+class Big_Classifier(nn.Module):
+    def __init__(self, encoder, latent_dim, num_classes):
+        super().__init__()
+        self.encoder = encoder
+        self.num_classes = num_classes
 
+        self.classifier_head = nn.Sequential(
+            nn.Linear(latent_dim, 256),
+            nn.LeakyReLU(),
+            nn.BatchNorm1d(256),
+            nn.Linear(256, 128),
+            nn.LeakyReLU(),
+            nn.BatchNorm1d(128),
+            nn.Linear(128, 64),
+            nn.LeakyReLU(),
+            nn.Dropout(0.3),
+            nn.BatchNorm1d(64),
+            nn.Linear(64, self.num_classes),
+        )
+
+    def forward(self, x):
+        encoded = self.encoder(x)
+        return self.classifier_head(encoded)
 
 class ContrastiveEncoder(nn.Module):
     def __init__(self, in_channels, latent_dim):

@@ -2,19 +2,6 @@ import numpy as np
 import torch 
 
 class NTXentLoss(torch.nn.Module):
-    """
-    Modifed from: https://github.com/sthalles/SimCLR/blob/master/loss/nt_xent.py
-    When computing loss, we are using a 2Nx2N similarity matrix, in which positve samples are on the diagonal of four
-    quadrants while negatives are all the other samples as shown below in 8x8 array, where we assume batch_size=4.
-                                        P . . . P . . .
-                                        . P . . . P . .
-                                        . . P . . . P .
-                                        . . . P . . . P
-                                        P . . . P . . .
-                                        . P . . . P . .
-                                        . . P . . . P .
-                                        . . . P . . . P
-    """
 
     def __init__(self, batch_size, temperature, device,  cosine_similarity=True):
         super(NTXentLoss, self).__init__()
